@@ -1,0 +1,23 @@
+node_modules
+
+# Keep generated environment file out of version control
+.env
+.env.*
+
+# Keep the dist folder out of version control
+dist
+
+# Keep the logs folder out of version control
+logs
+
+# Keep generated files out of version control
+generated/
+prisma/generated/
+
+# IDE and OS files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+

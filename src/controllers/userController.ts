@@ -1,0 +1,66 @@
+import { Request, Response } from 'express';
+import { UserService } from '../services/userService';
+
+const userService = new UserService();
+
+type AsyncRequestHandler = (req: Request, res: Response) => Promise<void>;
+
+export class UserController {
+  createUser: AsyncRequestHandler = async (req, res) => {
+    try {
+      const { email, name, password } = req.body;
+      const user = await userService.createUser(email, name, password);
+      res.status(201).json(user);
+    } catch (error) {
+      res.status(400).json({ error: 'Failed to create user' });
+    }
+  };
+
+  getUserById: AsyncRequestHandler = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const user = await userService.getUserById(Number(id));
+      if (!user) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(400).json({ error: 'Failed to get user' });
+    }
+  };
+
+  getAllUsers: AsyncRequestHandler = async (req, res) => {
+    try {
+      const users = await userService.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      res.status(400).json({ error: 'Failed to get users' });
+    }
+  };
+
+  updateUser: AsyncRequestHandler = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { email, name, password } = req.body;
+      const user = await userService.updateUser(Number(id), {
+        email,
+        name,
+        password,
+      });
+      res.json(user);
+    } catch (error) {
+      res.status(400).json({ error: 'Failed to update user' });
+    }
+  };
+
+  deleteUser: AsyncRequestHandler = async (req, res) => {
+    try {
+      const { id } = req.params;
+      await userService.deleteUser(Number(id));
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({ error: 'Failed to delete user' });
+    }
+  };
+}
