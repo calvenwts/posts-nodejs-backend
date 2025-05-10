@@ -89,6 +89,51 @@ A Node.js backend API for managing posts and users.
    curl http://localhost:3000/api/users
    ```
 
+### Monitoring with Prometheus and Grafana
+
+9. Install Prometheus and Grafana via Helm:
+
+   ```bash
+   helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+   helm repo update
+   helm install kube-monitor prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
+   ```
+
+10. Verify the pods are running:
+
+```bash
+kubectl get pods -n monitoring
+```
+
+11. Port-forward Prometheus:
+
+```bash
+kubectl port-forward -n monitoring svc/kube-monitor-kube-promethe-prometheus 9090
+```
+
+Access Prometheus at: http://localhost:9090
+
+12. Port-forward Grafana:
+
+```bash
+kubectl port-forward -n monitoring svc/kube-monitor-grafana 3001:80
+```
+
+Access Grafana at: http://localhost:3001
+
+Default login:
+
+- Username: `admin`
+- Password: `prom-operator` or check with:
+
+  ```bash
+  kubectl get secret -n monitoring kube-monitor-grafana -o jsonpath="{.data.admin-password}" | base64 --decode; echo
+  ```
+
+13. View your application's metrics by navigating to Prometheus > Targets and searching for `posts-api-monitor`.
+
+14. Create dashboards in Grafana using metrics like `http_requests_total`, `http_request_duration_seconds`, and `http_requests_errors_total`.
+
 ## API Endpoints
 
 ### Users

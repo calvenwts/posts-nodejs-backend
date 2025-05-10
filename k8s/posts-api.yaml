@@ -2,6 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: posts-api
+  labels:
+    app: posts-api
+    monitored: "true"
 spec:
   replicas: 1
   selector:
@@ -47,10 +50,14 @@ apiVersion: v1
 kind: Service
 metadata:
   name: posts-api-service
+  labels:
+    app: posts-api
+    monitored: "true"
 spec:
   selector:
     app: posts-api
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 3000
       targetPort: 3000
