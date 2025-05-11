@@ -32,7 +32,7 @@ const errorCounter = new client.Counter({
 });
 register.registerMetric(errorCounter);
 
-export const metricsMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const metricsMiddleware = (req: Request, res: Response, next: NextFunction): void => {
   const end = httpRequestDuration.startTimer({
     method: req.method,
     path: req.path,
@@ -62,7 +62,7 @@ export const metricsMiddleware = (req: Request, res: Response, next: NextFunctio
   next();
 };
 
-export const exposeMetricsRoute = (app: import('express').Express) => {
+export const exposeMetricsRoute = (app: import('express').Express): void => {
   app.get('/metrics', async (_req, res) => {
     res.set('Content-Type', register.contentType);
     res.send(await register.metrics());

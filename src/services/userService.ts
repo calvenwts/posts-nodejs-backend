@@ -2,6 +2,15 @@ import bcrypt from 'bcryptjs';
 import prisma from '../lib/prisma';
 import { User } from '@prisma/client';
 
+function isPrismaError(error: unknown): error is { code: string; meta?: { target?: string[] } } {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    typeof (error as { code?: unknown }).code === 'string'
+  );
+}
+
 export class UserService {
   async createUser(email: string, name: string, password: string): Promise<Omit<User, 'password'>> {
     try {
@@ -20,12 +29,17 @@ export class UserService {
           updatedAt: true,
         },
       });
-    } catch (error: any) {
-      if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        isPrismaError(error) &&
+        error.code === 'P2002' &&
+        error.meta?.target?.includes('email')
+      ) {
         console.error('Duplicate email error:', error);
         throw new Error('Email already exists');
       }
-      if (error.code === 'P2021') {
+      if (error instanceof Error && isPrismaError(error) && error.code === 'P2021') {
         console.error('Database schema error:', error);
         throw new Error('User table does not exist in the database');
       }

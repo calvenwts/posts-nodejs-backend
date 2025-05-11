@@ -23,13 +23,13 @@ export const mockPrismaClient = {
 };
 
 // This is a global variable to access the mock implementation of bcrypt.hash
-export const bcryptMock = {
+export const bcryptjsMock = {
   hash: jest.fn().mockImplementation((password) => `hashed_${password}`),
   compare: jest.fn().mockImplementation((password, hash) => hash === `hashed_${password}`),
 };
 
 // Mock Prisma client
-export const mockPrisma = () => {
+export const mockPrisma = (): void => {
   jest.mock('@prisma/client', () => {
     return {
       PrismaClient: jest.fn(() => mockPrismaClient),
@@ -37,7 +37,7 @@ export const mockPrisma = () => {
   });
 
   // Mock bcrypt for user service tests
-  jest.mock('bcrypt', () => bcryptMock);
+  jest.mock('bcryptjs', () => bcryptjsMock);
 
   // Also mock the prisma singleton from lib/prisma
   jest.mock('../../src/lib/prisma', () => {
@@ -69,7 +69,7 @@ export const mockUserServiceMethods = {
 };
 
 // Mock PostService
-export const mockPostService = () => {
+export const mockPostService = (): void => {
   jest.mock('../../src/services/postService', () => {
     return {
       PostService: jest.fn().mockImplementation(() => mockPostServiceMethods),
@@ -78,7 +78,7 @@ export const mockPostService = () => {
 };
 
 // Mock UserService
-export const mockUserService = () => {
+export const mockUserService = (): void => {
   jest.mock('../../src/services/userService', () => {
     return {
       UserService: jest.fn().mockImplementation(() => mockUserServiceMethods),
@@ -89,7 +89,12 @@ export const mockUserService = () => {
 /**
  * Controller test utilities
  */
-export const createMockResponse = () => {
+export const createMockResponse = (): {
+  jsonMock: jest.Mock;
+  statusMock: jest.Mock;
+  sendMock: jest.Mock;
+  mockResponse: Partial<Response>;
+} => {
   const jsonMock = jest.fn().mockReturnThis();
   const statusMock = jest.fn().mockReturnThis();
   const sendMock = jest.fn().mockReturnThis();
