@@ -1,5 +1,11 @@
 // Import test utilities and mock UserService
-import { mockUserService, mockUserServiceMethods, createMockResponse } from '../utils/testUtils';
+import {
+  mockUserService,
+  mockUserServiceMethods,
+  IMockUserService,
+} from '../utils/userServiceMock';
+import { createMockResponse } from '../utils/expressMock';
+import { createUser, createUsers } from '../utils/factories/userFactory';
 
 // Set up mocks
 mockUserService();
@@ -27,21 +33,14 @@ describe('UserController', () => {
     sendMock = mocks.sendMock;
     mockResponse = mocks.mockResponse;
 
-    // Initialize controller
-    userController = new UserController();
+    // Initialize controller with mock service methods
+    userController = new UserController(mockUserServiceMethods as IMockUserService);
   });
 
   describe('createUser', () => {
     it('should create a user and return 201 status code', async () => {
       // Arrange
-      const mockUser = {
-        id: 1,
-        email: 'test@example.com',
-        name: 'Test User',
-        password: 'hashed_password123',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const mockUser = createUser();
 
       mockRequest = {
         body: {
@@ -90,14 +89,7 @@ describe('UserController', () => {
   describe('getUserById', () => {
     it('should return a user by id and 200 status code', async () => {
       // Arrange
-      const mockUser = {
-        id: 1,
-        email: 'test@example.com',
-        name: 'Test User',
-        password: 'hashed_password123',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const mockUser = createUser();
 
       mockRequest = {
         params: {
@@ -137,24 +129,7 @@ describe('UserController', () => {
   describe('getAllUsers', () => {
     it('should return all users', async () => {
       // Arrange
-      const mockUsers = [
-        {
-          id: 1,
-          email: 'test1@example.com',
-          name: 'Test User 1',
-          password: 'hashed_password123',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: 2,
-          email: 'test2@example.com',
-          name: 'Test User 2',
-          password: 'hashed_password456',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ];
+      const mockUsers = createUsers(2);
 
       mockRequest = {};
       mockUserServiceMethods.getAllUsers.mockResolvedValue(mockUsers);
@@ -184,14 +159,10 @@ describe('UserController', () => {
   describe('updateUser', () => {
     it('should update a user and return the updated user', async () => {
       // Arrange
-      const mockUser = {
-        id: 1,
+      const mockUser = createUser({
         email: 'updated@example.com',
         name: 'Updated User',
-        password: 'hashed_password123',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      });
 
       mockRequest = {
         params: {
@@ -227,14 +198,12 @@ describe('UserController', () => {
         },
       };
 
-      mockUserServiceMethods.deleteUser.mockResolvedValue({
-        id: 1,
-        email: 'deleted@example.com',
-        name: 'Deleted User',
-        password: 'hashed_password',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      mockUserServiceMethods.deleteUser.mockResolvedValue(
+        createUser({
+          email: 'deleted@example.com',
+          name: 'Deleted User',
+        }),
+      );
 
       // Act
       await userController.deleteUser(mockRequest as Request, mockResponse as Response);

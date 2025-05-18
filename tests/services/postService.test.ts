@@ -1,5 +1,6 @@
 // Import test utilities and mock Prisma before importing PostService
-import { mockPrisma, mockPrismaClient } from '../utils/testUtils';
+import { mockPrisma, mockPrismaClient } from '../utils/prismaMock';
+import { createPost, createPostWithAuthor, createPosts } from '../utils/factories/postFactory';
 
 // Set up mocks
 mockPrisma();
@@ -19,23 +20,7 @@ describe('PostService', () => {
   describe('createPost', () => {
     it('should create a post with the given data', async () => {
       // Arrange
-      const mockPost = {
-        id: 1,
-        title: 'Test Post',
-        content: 'Test content',
-        published: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        authorId: 1,
-        author: {
-          id: 1,
-          name: 'Test User',
-          email: 'test@example.com',
-          password: 'password',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
+      const mockPost = createPostWithAuthor();
 
       mockPrismaClient.post.create.mockResolvedValue(mockPost);
 
@@ -61,24 +46,7 @@ describe('PostService', () => {
   describe('getPostById', () => {
     it('should return a post by id', async () => {
       // Arrange
-      const mockPost = {
-        id: 1,
-        title: 'Test Post',
-        content: 'Test content',
-        published: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        authorId: 1,
-        author: {
-          id: 1,
-          name: 'Test User',
-          email: 'test@example.com',
-          password: 'password',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
-
+      const mockPost = createPostWithAuthor();
       mockPrismaClient.post.findUnique.mockResolvedValue(mockPost);
 
       // Act
@@ -117,43 +85,7 @@ describe('PostService', () => {
   describe('getAllPosts', () => {
     it('should return all posts', async () => {
       // Arrange
-      const mockPosts = [
-        {
-          id: 1,
-          title: 'Test Post 1',
-          content: 'Test content 1',
-          published: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          authorId: 1,
-          author: {
-            id: 1,
-            name: 'Test User',
-            email: 'test@example.com',
-            password: 'password',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-        },
-        {
-          id: 2,
-          title: 'Test Post 2',
-          content: 'Test content 2',
-          published: false,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          authorId: 1,
-          author: {
-            id: 1,
-            name: 'Test User',
-            email: 'test@example.com',
-            password: 'password',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-        },
-      ];
-
+      const mockPosts = createPosts(2).map((post) => createPostWithAuthor({ ...post }));
       mockPrismaClient.post.findMany.mockResolvedValue(mockPosts);
 
       // Act
@@ -173,23 +105,11 @@ describe('PostService', () => {
   describe('updatePost', () => {
     it('should update a post with the given data', async () => {
       // Arrange
-      const mockUpdatedPost = {
-        id: 1,
+      const mockUpdatedPost = createPostWithAuthor({
         title: 'Updated Post',
         content: 'Updated content',
         published: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        authorId: 1,
-        author: {
-          id: 1,
-          name: 'Test User',
-          email: 'test@example.com',
-          password: 'password',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
+      });
 
       mockPrismaClient.post.update.mockResolvedValue(mockUpdatedPost);
 
@@ -220,15 +140,7 @@ describe('PostService', () => {
   describe('deletePost', () => {
     it('should delete a post', async () => {
       // Arrange
-      const mockDeletedPost = {
-        id: 1,
-        title: 'Test Post',
-        content: 'Test content',
-        published: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        authorId: 1,
-      };
+      const mockDeletedPost = createPost();
 
       mockPrismaClient.post.delete.mockResolvedValue(mockDeletedPost);
 

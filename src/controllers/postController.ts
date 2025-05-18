@@ -1,15 +1,19 @@
 import { Request, Response } from 'express';
 import { PostService } from '../services/postService';
 
-const postService = new PostService();
-
 type AsyncRequestHandler = (req: Request, res: Response) => Promise<void>;
 
 export class PostController {
+  private postService: PostService;
+
+  constructor(postService: PostService) {
+    this.postService = postService;
+  }
+
   createPost: AsyncRequestHandler = async (req, res) => {
     try {
       const { title, content, authorId } = req.body;
-      const post = await postService.createPost(title, content, authorId);
+      const post = await this.postService.createPost(title, content, authorId);
       res.status(201).json(post);
     } catch (error) {
       res.status(400).json({ error: 'Failed to create post' });
@@ -19,7 +23,7 @@ export class PostController {
   getPostById: AsyncRequestHandler = async (req, res) => {
     try {
       const { id } = req.params;
-      const post = await postService.getPostById(Number(id));
+      const post = await this.postService.getPostById(Number(id));
       if (!post) {
         res.status(404).json({ error: 'Post not found' });
         return;
@@ -32,7 +36,7 @@ export class PostController {
 
   getAllPosts: AsyncRequestHandler = async (req, res) => {
     try {
-      const posts = await postService.getAllPosts();
+      const posts = await this.postService.getAllPosts();
       res.json(posts);
     } catch (error) {
       res.status(400).json({ error: 'Failed to get posts' });
@@ -43,7 +47,7 @@ export class PostController {
     try {
       const { id } = req.params;
       const { title, content, published } = req.body;
-      const post = await postService.updatePost(Number(id), {
+      const post = await this.postService.updatePost(Number(id), {
         title,
         content,
         published,
@@ -57,7 +61,7 @@ export class PostController {
   deletePost: AsyncRequestHandler = async (req, res) => {
     try {
       const { id } = req.params;
-      await postService.deletePost(Number(id));
+      await this.postService.deletePost(Number(id));
       res.status(204).send();
     } catch (error) {
       res.status(400).json({ error: 'Failed to delete post' });

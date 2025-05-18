@@ -1,15 +1,19 @@
 import { Request, Response } from 'express';
 import { UserService } from '../services/userService';
 
-const userService = new UserService();
-
 type AsyncRequestHandler = (req: Request, res: Response) => Promise<void>;
 
 export class UserController {
+  private userService: UserService;
+
+  constructor(userService: UserService) {
+    this.userService = userService;
+  }
+
   createUser: AsyncRequestHandler = async (req, res) => {
     try {
       const { email, name, password } = req.body;
-      const user = await userService.createUser(email, name, password);
+      const user = await this.userService.createUser(email, name, password);
       res.status(201).json(user);
     } catch (error) {
       res.status(400).json({ error: 'Failed to create user' });
@@ -19,7 +23,7 @@ export class UserController {
   getUserById: AsyncRequestHandler = async (req, res) => {
     try {
       const { id } = req.params;
-      const user = await userService.getUserById(Number(id));
+      const user = await this.userService.getUserById(Number(id));
       if (!user) {
         res.status(404).json({ error: 'User not found' });
         return;
@@ -32,7 +36,7 @@ export class UserController {
 
   getAllUsers: AsyncRequestHandler = async (req, res) => {
     try {
-      const users = await userService.getAllUsers();
+      const users = await this.userService.getAllUsers();
       res.json(users);
     } catch (error) {
       res.status(400).json({ error: 'Failed to get users' });
@@ -43,7 +47,7 @@ export class UserController {
     try {
       const { id } = req.params;
       const { email, name, password } = req.body;
-      const user = await userService.updateUser(Number(id), {
+      const user = await this.userService.updateUser(Number(id), {
         email,
         name,
         password,
@@ -57,7 +61,7 @@ export class UserController {
   deleteUser: AsyncRequestHandler = async (req, res) => {
     try {
       const { id } = req.params;
-      await userService.deleteUser(Number(id));
+      await this.userService.deleteUser(Number(id));
       res.status(204).send();
     } catch (error) {
       res.status(400).json({ error: 'Failed to delete user' });

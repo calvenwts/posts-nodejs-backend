@@ -1,8 +1,11 @@
 // Import test utilities and mock Prisma before importing UserService
-import { mockPrisma, mockPrismaClient, bcryptjsMock } from '../utils/testUtils';
+import { mockPrisma, mockPrismaClient } from '../utils/prismaMock';
+import { mockBcrypt, bcryptjsMock } from '../utils/bcryptMock';
+import { createUser, createUsers } from '../utils/factories/userFactory';
 
 // Set up mocks
 mockPrisma();
+mockBcrypt();
 
 // Import after mocking
 import { UserService } from '../../src/services/userService';
@@ -19,14 +22,7 @@ describe('UserService', () => {
   describe('createUser', () => {
     it('should create a user with the given data and hash the password', async () => {
       // Arrange
-      const mockUser = {
-        id: 1,
-        email: 'test@example.com',
-        name: 'Test User',
-        password: 'hashed_password123',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const mockUser = createUser();
 
       // Setup password hashing mock
       bcryptjsMock.hash.mockReturnValueOnce('hashed_password123');
@@ -59,15 +55,7 @@ describe('UserService', () => {
   describe('getUserById', () => {
     it('should return a user by id', async () => {
       // Arrange
-      const mockUser = {
-        id: 1,
-        email: 'test@example.com',
-        name: 'Test User',
-        password: 'hashed_password123',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
+      const mockUser = createUser();
       mockPrismaClient.user.findUnique.mockResolvedValue(mockUser);
 
       // Act
@@ -126,25 +114,7 @@ describe('UserService', () => {
   describe('getAllUsers', () => {
     it('should return all users', async () => {
       // Arrange
-      const mockUsers = [
-        {
-          id: 1,
-          email: 'test1@example.com',
-          name: 'Test User 1',
-          password: 'hashed_password123',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: 2,
-          email: 'test2@example.com',
-          name: 'Test User 2',
-          password: 'hashed_password456',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ];
-
+      const mockUsers = createUsers(2);
       mockPrismaClient.user.findMany.mockResolvedValue(mockUsers);
 
       // Act

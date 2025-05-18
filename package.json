@@ -2,6 +2,9 @@
   "name": "posts-nodejs-backend",
   "version": "1.0.0",
   "main": "dist/app.js",
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "scripts": {
     "dev": "NODE_ENV=development ts-node-dev --respawn --transpile-only src/app.ts",
     "staging": "NODE_ENV=staging ts-node-dev --respawn --transpile-only src/app.ts",
@@ -35,7 +38,10 @@
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:format": "prisma format",
-    "prisma:validate": "prisma validate"
+    "prisma:validate": "prisma validate",
+    "db:seed:dev": "NODE_ENV=development prisma db seed",
+    "db:seed:staging": "NODE_ENV=staging prisma db seed",
+    "db:seed:prod": "NODE_ENV=production prisma db seed"
   },
   "keywords": [],
   "author": "",

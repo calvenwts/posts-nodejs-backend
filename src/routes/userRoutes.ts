@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import { UserController } from '../controllers/userController';
 import { validateUserInput } from '../middleware/validation';
+import { UserService } from '../services/userService';
 
 const router = Router();
-const userController = new UserController();
+const userController = new UserController(new UserService());
 
 // Create a new user
 router.post('/', validateUserInput, userController.createUser);

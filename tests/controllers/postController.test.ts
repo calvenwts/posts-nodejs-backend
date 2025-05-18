@@ -1,5 +1,11 @@
 // Import test utilities and mock PostService
-import { mockPostService, mockPostServiceMethods, createMockResponse } from '../utils/testUtils';
+import {
+  mockPostService,
+  mockPostServiceMethods,
+  IMockPostService,
+} from '../utils/postServiceMock';
+import { createMockResponse } from '../utils/expressMock';
+import { createPostWithAuthor, createPosts } from '../utils/factories/postFactory';
 
 // Set up mocks
 mockPostService();
@@ -27,35 +33,19 @@ describe('PostController', () => {
     sendMock = mocks.sendMock;
     mockResponse = mocks.mockResponse;
 
-    // Initialize controller
-    postController = new PostController();
+    // Initialize controller with mock service methods
+    postController = new PostController(mockPostServiceMethods as IMockPostService);
   });
 
   describe('createPost', () => {
     it('should create a post and return 201 status code', async () => {
       // Arrange
-      const mockPost = {
-        id: 1,
-        title: 'Test Post',
-        content: 'Test content',
-        published: false,
-        authorId: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        author: {
-          id: 1,
-          name: 'Test User',
-          email: 'test@example.com',
-          password: 'password',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
+      const mockPost = createPostWithAuthor();
 
       mockRequest = {
         body: {
           title: 'Test Post',
-          content: 'Test content',
+          content: 'Test Content',
           authorId: 1,
         },
       };
@@ -68,7 +58,7 @@ describe('PostController', () => {
       // Assert
       expect(mockPostServiceMethods.createPost).toHaveBeenCalledWith(
         'Test Post',
-        'Test content',
+        'Test Content',
         1,
       );
       expect(statusMock).toHaveBeenCalledWith(201);
@@ -80,7 +70,7 @@ describe('PostController', () => {
       mockRequest = {
         body: {
           title: 'Test Post',
-          content: 'Test content',
+          content: 'Test Content',
           authorId: 1,
         },
       };
@@ -99,23 +89,7 @@ describe('PostController', () => {
   describe('getPostById', () => {
     it('should return a post by id and 200 status code', async () => {
       // Arrange
-      const mockPost = {
-        id: 1,
-        title: 'Test Post',
-        content: 'Test content',
-        published: false,
-        authorId: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        author: {
-          id: 1,
-          name: 'Test User',
-          email: 'test@example.com',
-          password: 'password',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
+      const mockPost = createPostWithAuthor();
 
       mockRequest = {
         params: {
@@ -155,25 +129,7 @@ describe('PostController', () => {
   describe('getAllPosts', () => {
     it('should return all posts', async () => {
       // Arrange
-      const mockPosts = [
-        {
-          id: 1,
-          title: 'Test Post 1',
-          content: 'Test content 1',
-          published: true,
-          authorId: 1,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          author: {
-            id: 1,
-            name: 'Test User',
-            email: 'test@example.com',
-            password: 'password',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-        },
-      ];
+      const mockPosts = createPosts(1).map((post) => createPostWithAuthor({ ...post }));
 
       mockRequest = {};
       mockPostServiceMethods.getAllPosts.mockResolvedValue(mockPosts);
@@ -185,28 +141,29 @@ describe('PostController', () => {
       expect(mockPostServiceMethods.getAllPosts).toHaveBeenCalled();
       expect(jsonMock).toHaveBeenCalledWith(mockPosts);
     });
+
+    it('should handle errors and return 400 status code', async () => {
+      // Arrange
+      mockRequest = {};
+      mockPostServiceMethods.getAllPosts.mockRejectedValue(new Error('Database error'));
+
+      // Act
+      await postController.getAllPosts(mockRequest as Request, mockResponse as Response);
+
+      // Assert
+      expect(statusMock).toHaveBeenCalledWith(400);
+      expect(jsonMock).toHaveBeenCalledWith({ error: 'Failed to get posts' });
+    });
   });
 
   describe('updatePost', () => {
     it('should update a post and return the updated post', async () => {
       // Arrange
-      const mockPost = {
-        id: 1,
+      const mockPost = createPostWithAuthor({
         title: 'Updated Post',
-        content: 'Updated content',
+        content: 'Updated Content',
         published: true,
-        authorId: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        author: {
-          id: 1,
-          name: 'Test User',
-          email: 'test@example.com',
-          password: 'password',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
+      });
 
       mockRequest = {
         params: {
@@ -214,7 +171,7 @@ describe('PostController', () => {
         },
         body: {
           title: 'Updated Post',
-          content: 'Updated content',
+          content: 'Updated Content',
           published: true,
         },
       };
@@ -227,7 +184,7 @@ describe('PostController', () => {
       // Assert
       expect(mockPostServiceMethods.updatePost).toHaveBeenCalledWith(1, {
         title: 'Updated Post',
-        content: 'Updated content',
+        content: 'Updated Content',
         published: true,
       });
       expect(jsonMock).toHaveBeenCalledWith(mockPost);
@@ -243,15 +200,7 @@ describe('PostController', () => {
         },
       };
 
-      mockPostServiceMethods.deletePost.mockResolvedValue({
-        id: 1,
-        title: 'Deleted Post',
-        content: 'This post has been deleted',
-        published: false,
-        authorId: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      mockPostServiceMethods.deletePost.mockResolvedValue(createPostWithAuthor());
 
       // Act
       await postController.deletePost(mockRequest as Request, mockResponse as Response);
