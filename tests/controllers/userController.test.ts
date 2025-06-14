@@ -232,4 +232,84 @@ describe('UserController', () => {
       expect(jsonMock).toHaveBeenCalledWith({ error: 'Failed to delete user' });
     });
   });
+
+  describe('login', () => {
+    it('should login successfully and return token and user data', async () => {
+      // Arrange
+      const mockUser = createUser();
+      const mockToken = 'mock.jwt.token';
+
+      mockRequest = {
+        body: {
+          email: 'test@example.com',
+          password: 'password123',
+        },
+      };
+
+      mockUserServiceMethods.login.mockResolvedValue({
+        token: mockToken,
+        user: {
+          id: mockUser.id,
+          email: mockUser.email,
+          name: mockUser.name,
+          createdAt: mockUser.createdAt,
+          updatedAt: mockUser.updatedAt,
+        },
+      });
+
+      // Act
+      await userController.login(mockRequest as Request, mockResponse as Response);
+
+      // Assert
+      expect(mockUserServiceMethods.login).toHaveBeenCalledWith('test@example.com', 'password123');
+      expect(jsonMock).toHaveBeenCalledWith({
+        token: mockToken,
+        user: {
+          id: mockUser.id,
+          email: mockUser.email,
+          name: mockUser.name,
+          createdAt: mockUser.createdAt,
+          updatedAt: mockUser.updatedAt,
+        },
+      });
+    });
+
+    it('should return 401 for invalid credentials', async () => {
+      // Arrange
+      mockRequest = {
+        body: {
+          email: 'test@example.com',
+          password: 'wrongpassword',
+        },
+      };
+
+      mockUserServiceMethods.login.mockRejectedValue(new Error('Invalid credentials'));
+
+      // Act
+      await userController.login(mockRequest as Request, mockResponse as Response);
+
+      // Assert
+      expect(statusMock).toHaveBeenCalledWith(401);
+      expect(jsonMock).toHaveBeenCalledWith({ error: 'Invalid credentials' });
+    });
+
+    it('should return 400 for other errors', async () => {
+      // Arrange
+      mockRequest = {
+        body: {
+          email: 'test@example.com',
+          password: 'password123',
+        },
+      };
+
+      mockUserServiceMethods.login.mockRejectedValue(new Error('Database error'));
+
+      // Act
+      await userController.login(mockRequest as Request, mockResponse as Response);
+
+      // Assert
+      expect(statusMock).toHaveBeenCalledWith(400);
+      expect(jsonMock).toHaveBeenCalledWith({ error: 'Failed to login' });
+    });
+  });
 });

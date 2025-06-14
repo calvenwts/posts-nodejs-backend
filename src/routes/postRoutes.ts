@@ -2,9 +2,13 @@ import { Router } from 'express';
 import { PostController } from '../controllers/postController';
 import { validatePostInput } from '../middleware/validation';
 import { PostService } from '../services/postService';
+import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
 const postController = new PostController(new PostService());
+
+// All post routes are protected
+router.use(authenticateToken);
 
 // Create a new post
 router.post('/', validatePostInput, postController.createPost);

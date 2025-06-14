@@ -1,7 +1,9 @@
+import { User } from '@prisma/client';
+
 declare global {
   namespace Express {
     interface Request {
-      // Add custom properties here if needed
+      user?: User;
     }
   }
 }

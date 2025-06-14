@@ -7,6 +7,7 @@ export interface IUserService {
   getAllUsers(): Promise<User[]>;
   updateUser(id: number, data: { email?: string; name?: string; password?: string }): Promise<User>;
   deleteUser(id: number): Promise<User>;
+  login(email: string, password: string): Promise<{ token: string; user: Omit<User, 'password'> }>;
 }
 
 export interface IMockUserService extends IUserService {
@@ -19,6 +20,7 @@ export interface IMockUserService extends IUserService {
     [number, { email?: string; name?: string; password?: string }]
   >;
   deleteUser: jest.Mock<Promise<User>, [number]>;
+  login: jest.Mock<Promise<{ token: string; user: Omit<User, 'password'> }>, [string, string]>;
 }
 
 export const mockUserServiceMethods: IMockUserService = {
@@ -28,6 +30,7 @@ export const mockUserServiceMethods: IMockUserService = {
   getAllUsers: jest.fn(),
   updateUser: jest.fn(),
   deleteUser: jest.fn(),
+  login: jest.fn(),
 };
 
 export const mockUserService = (): void => {

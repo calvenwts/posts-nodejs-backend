@@ -67,4 +67,18 @@ export class UserController {
       res.status(400).json({ error: 'Failed to delete user' });
     }
   };
+
+  login: AsyncRequestHandler = async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      const result = await this.userService.login(email, password);
+      res.json(result);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Invalid credentials') {
+        res.status(401).json({ error: 'Invalid credentials' });
+        return;
+      }
+      res.status(400).json({ error: 'Failed to login' });
+    }
+  };
 }

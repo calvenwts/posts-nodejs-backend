@@ -1,5 +1,4 @@
 npx lint-staged && \
-npm run format && \
 npm run typecheck && \
 npm test && \
 npm run lint && \

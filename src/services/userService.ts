@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import prisma from '../lib/prisma';
 import { User } from '@prisma/client';
+import { generateToken } from '../utils/jwt';
 
 function isPrismaError(error: unknown): error is { code: string; meta?: { target?: string[] } } {
   return (
@@ -101,5 +102,28 @@ export class UserService {
     return prisma.user.delete({
       where: { id },
     });
+  }
+
+  async login(
+    email: string,
+    password: string,
+  ): Promise<{ token: string; user: Omit<User, 'password'> }> {
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new Error('Invalid credentials');
+    }
+
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      throw new Error('Invalid credentials');
+    }
+
+    const token = generateToken(user.id, user.email);
+
+    const { id, email: userEmail, name, createdAt, updatedAt } = user;
+    return { token, user: { id, email: userEmail, name, createdAt, updatedAt } };
   }
 }
